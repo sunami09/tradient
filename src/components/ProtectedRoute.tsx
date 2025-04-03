@@ -1,10 +1,8 @@
 // src/components/ProtectedRoute.tsx
 import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
-import React from "react";
-
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const [loading, setLoading] = useState(true);
@@ -18,7 +16,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return null; // or a loading spinner
+  if (loading) return null;
 
   return authenticated ? children : <Navigate to="/login" />;
 }
