@@ -91,7 +91,7 @@ function UpdateProfilePage() {
       },
     },
     {
-      message: "What is your first name?",
+      message: "So, What should we call you?",
       rightPaneContent: (
         <NameInputStep
           profilePicUrl={profilePicUrl}

@@ -1,5 +1,5 @@
+// src/components/ProfileSteps.tsx
 import { useState, useRef } from "react";
-import { ReactNode } from "react";
 
 // Types for the different step components
 export interface ProfilePictureStepProps {
@@ -139,7 +139,7 @@ export function NameInputStep({ profilePicUrl, onNameChange }: NameInputStepProp
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "center", // Center container below the picture
         width: "100%",
         opacity: 0,
         animation: "fadeIn 0.5s ease-in forwards",
@@ -166,20 +166,34 @@ export function NameInputStep({ profilePicUrl, onNameChange }: NameInputStepProp
       )}
 
       <input
+        autoFocus
         type="text"
         placeholder="First name"
         onChange={(e) => onNameChange(e.target.value)}
-        style={{
-          background: "#000",
-          color: "white",
-          padding: "1rem",
-          borderRadius: "6px",
-          border: "1px solid #333",
-          width: "80%",
-          fontSize: "1rem",
-          marginBottom: "20px",
-        }}
+        className="minimal-input"
       />
+
+      <style>
+        {`
+          .minimal-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 80%;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            caret-color: #555;
+            text-align: center;
+          }
+
+          .minimal-input::placeholder {
+            color: #555;
+            font-size: 2rem;
+            text-align: center;
+          }
+        `}
+      </style>
     </div>
   );
 }
@@ -191,7 +205,7 @@ export function LastNameInputStep({ profilePicUrl, onLastNameChange }: LastNameI
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "center", // Center container below the picture
         width: "100%",
         opacity: 0,
         animation: "fadeIn 0.5s ease-in forwards",
@@ -218,20 +232,34 @@ export function LastNameInputStep({ profilePicUrl, onLastNameChange }: LastNameI
       )}
 
       <input
+        autoFocus
         type="text"
         placeholder="Last name"
         onChange={(e) => onLastNameChange(e.target.value)}
-        style={{
-          background: "#000",
-          color: "white",
-          padding: "1rem",
-          borderRadius: "6px",
-          border: "1px solid #333",
-          width: "80%",
-          fontSize: "1rem",
-          marginBottom: "20px",
-        }}
+        className="minimal-input"
       />
+
+      <style>
+        {`
+          .minimal-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 80%;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            caret-color: #555;
+            text-align: center;
+          }
+
+          .minimal-input::placeholder {
+            color: #555;
+            font-size: 2rem;
+            text-align: center;
+          }
+        `}
+      </style>
     </div>
   );
 }
