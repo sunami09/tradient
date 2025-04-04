@@ -6,7 +6,10 @@ function Layout() {
   return (
     <>
       <NavBar />
-      <Outlet />
+      {/* Add padding-top to push the content below the fixed navbar */}
+      <div style={{ paddingTop: "70px" }}>
+        <Outlet />
+      </div>
     </>
   );
 }
