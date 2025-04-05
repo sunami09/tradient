@@ -5,3 +5,8 @@ publish = "dist"
 [build.environment]
 GO_VERSION = "1.19"         # Satisfy Netlify's Go requirement
 NODE_VERSION = "18"         # Use Node 18 or your preferred version
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
