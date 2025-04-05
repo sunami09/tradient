@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Define the prop types for the component
 interface PriceDisplayProps {
@@ -8,8 +8,7 @@ interface PriceDisplayProps {
   isHovering?: boolean;
 }
 
-// A reusable component for displaying stock prices
-// Can show real-time prices or historical prices during chart hover
+// A simplified component for displaying stock prices
 const PriceDisplay: React.FC<PriceDisplayProps> = ({ 
   symbol, 
   initialPrice = 0, 
@@ -17,58 +16,141 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
   isHovering = false
 }) => {
   const [currentPrice, setCurrentPrice] = useState(initialPrice);
-  const [priceColor, setPriceColor] = useState("white"); // Default color
-  const [lastPrice, setLastPrice] = useState(initialPrice);
+  const [priceColor, setPriceColor] = useState("white");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Use refs to handle race conditions
+  const currentSymbolRef = useRef(symbol);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Fetch and update real-time prices
+  // Reset state when symbol changes
   useEffect(() => {
-    if (!symbol || isHovering) return;
-
-    const fetchPrice = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_PROXY_API_BASE_URL}/realtime-prices/${symbol}`);
-        const data = await res.json();
-
-        if (Array.isArray(data) && data.length > 0 && data[0].price !== undefined) {
-          setLastPrice(currentPrice);
-          setCurrentPrice(data[0].price);
-          
-          // Reset color after a short delay
-          setTimeout(() => setPriceColor("white"), 3000);
-        }
-      } catch (error) {
-        console.error("Failed to fetch price", error);
+    // Cancel any pending requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Update the ref with current symbol
+    currentSymbolRef.current = symbol;
+    
+    // Reset states for new symbol
+    setCurrentPrice(initialPrice);
+    setPriceColor("white");
+    setIsLoading(true);
+    
+    // Fetch price data once when component mounts or symbol changes
+    fetchPriceData();
+    
+    // Clean up function
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
+  }, [symbol, initialPrice]);
 
-    fetchPrice();
-    const interval = setInterval(fetchPrice, 4000);
-    return () => clearInterval(interval);
-  }, [symbol, currentPrice, lastPrice, isHovering]);
-
-  // Display the historical price when hovering over chart
+  // Simple effect to handle hover state - no realtime updates
   useEffect(() => {
     if (isHovering && historicalPrice !== null) {
+      // Just show the historical price when hovering, don't update
       setCurrentPrice(historicalPrice);
-    } else if (!isHovering && lastPrice) {
-      // Restore real-time price when not hovering
-      setCurrentPrice(lastPrice);
+    } else if (!isHovering && initialPrice) {
+      // When not hovering, show the static price
+      setCurrentPrice(initialPrice);
     }
-  }, [historicalPrice, isHovering, lastPrice]);
+  }, [historicalPrice, isHovering, initialPrice]);
+
+  // Fetch price data once
+  const fetchPriceData = async () => {
+    if (!currentSymbolRef.current) return;
+    
+    // Create new abort controller for this request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+    
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_PROXY_API_BASE_URL}/realtime-prices/${currentSymbolRef.current}`,
+        { signal: abortControllerRef.current.signal }
+      );
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch price: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      
+      // Make sure this is still the active symbol
+      if (currentSymbolRef.current !== symbol) {
+        return;
+      }
+      
+      if (Array.isArray(data) && data.length > 0 && data[0].price !== undefined) {
+        const newPrice = data[0].price;
+        setCurrentPrice(newPrice);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        console.error("Failed to fetch price", error);
+      }
+      setIsLoading(false);
+    }
+  };
+
+  // Display the appropriate price
+  const displayPrice = isHovering && historicalPrice !== null 
+    ? historicalPrice 
+    : currentPrice;
 
   return (
-    <h3 
-      style={{ 
-        fontSize: "2rem", 
-        color: priceColor,
-        transition: "color 0.3s ease"
-      }}
-    >
-      ${currentPrice.toFixed(2)}
-      {isHovering && <span style={{ fontSize: "1rem", marginLeft: "10px", opacity: 0.7 }}>
-        (Historical)
-      </span>}
-    </h3>
+    <div style={{ position: 'relative' }}>
+      <h3 
+        style={{ 
+          fontSize: "2rem", 
+          color: priceColor,
+          transition: "color 0.3s ease"
+        }}
+      >
+        ${displayPrice.toFixed(2)}
+        {isHovering && <span style={{ fontSize: "1rem", marginLeft: "10px", opacity: 0.7 }}>
+          (Historical)
+        </span>}
+      </h3>
+      
+      {isLoading && (
+        <div 
+          style={{ 
+            position: 'absolute', 
+            right: '-25px', 
+            top: '50%', 
+            transform: 'translateY(-50%)'
+          }}
+        >
+          <div 
+            style={{
+              width: '14px',
+              height: '14px',
+              borderRadius: '50%',
+              border: '2px solid rgba(204, 247, 89, 0.2)',
+              borderTopColor: 'rgba(204, 247, 89, 1)',
+              animation: 'spin 1s linear infinite'
+            }}
+          />
+        </div>
+      )}
+      
+      <style>
+        {`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+    </div>
   );
 };
 
