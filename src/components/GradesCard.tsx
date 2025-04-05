@@ -58,7 +58,7 @@ const GradesCard: React.FC<GradesCardProps> = ({ symbol }) => {
         borderRadius: "8px",
         paddingTop: "10px",
         paddingLeft: "20px",
-        paddingRight: "20px",
+        paddingRight: "25px",
         paddingBottom: "30px",
         width: "100%",
         maxWidth: "350px",

@@ -54,7 +54,7 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
     <div style={{
       backgroundColor: '#1E2124',
       borderRadius: '8px',
-      padding: '20px',
+      padding: '23px',
       paddingLeft: "25px",
       width: '100%',
       maxWidth: '350px',
