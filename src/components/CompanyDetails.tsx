@@ -142,21 +142,21 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
         {/* Column 1 - Now displays CEO */}
         <div>
           <p style={{ margin: "0", fontWeight: "bold" }}>CEO</p>
-          <p style={{ margin: "0" }}>{ceo}</p>
+          <p style={{ margin: "0" }}>{ceo || "---"}</p>
         </div>
         <div>
           <p style={{ margin: "0", fontWeight: "bold" }}>Industry</p>
-          <p style={{ margin: "0" }}>{industry}</p>
+          <p style={{ margin: "0" }}>{industry || "---"}</p>
         </div>
 
         {/* Column 2 */}
         <div>
           <p style={{ margin: "0", fontWeight: "bold" }}>Sector</p>
-          <p style={{ margin: "0" }}>{sector}</p>
+          <p style={{ margin: "0" }}>{sector || "---"}</p>
         </div>
         <div>
           <p style={{ margin: "0", fontWeight: "bold" }}>IPO Date</p>
-          <p style={{ margin: "0" }}>{ipoDate}</p>
+          <p style={{ margin: "0" }}>{ipoDate || "---"}</p>
         </div>
       </div>
     </div>
