@@ -168,10 +168,13 @@ function StockPage() {
         {/* Right side - Two Cards */}
         <div
           style={{
-            alignSelf: "start",
-            position: "sticky",
-            top: "3.5rem",
-            paddingTop: "2.9rem",
+            position: "fixed",
+            top: "3.5rem",         // adjust to your header height, etc.
+            right: "0.5rem",         // adjust as needed for proper alignment
+            width: "450px",
+            // height: "calc(100vh - 3.5rem)", // fill the viewport minus the top offset
+            // overflowY: "auto",     // allow scrolling within the container if content overflows
+            paddingTop: "5rem",
           }}
         >
           {/* 1) Trade Card */}

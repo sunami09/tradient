@@ -54,7 +54,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchPriceData();
-    }, 10000); // 10,000ms = 10 seconds
+    }, 5000); // 10,000ms = 10 seconds
 
     return () => {
       clearInterval(intervalId);
