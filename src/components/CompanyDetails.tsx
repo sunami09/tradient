@@ -101,7 +101,17 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
       </a>
     );
   } else {
-    heading = <h2>About</h2>;
+    heading = (
+      <>
+        <h2>About</h2>
+        <hr
+          style={{
+            marginBottom: "1.5rem",
+            borderColor: "rgba(255,255,255,0.2)",
+          }}
+        />
+      </>
+    );
   }
 
   // Truncate to first 2 sentences if not expanded
@@ -111,7 +121,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
   return (
     <div style={{ color: "white", marginTop: "2rem" }}>
       {heading}
-
+      
       {/* Description with "Read more" toggle */}
       <p style={{ margin: "0.5rem 0 1.5rem 0" }}>
         {isExpanded ? description : truncatedDescription}{" "}

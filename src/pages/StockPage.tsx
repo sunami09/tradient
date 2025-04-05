@@ -5,15 +5,30 @@ import PriceDisplay from "../components/PriceDisplay";
 import StockChart from "../components/StockChart";
 import TradeCard from "../components/TradeCard";
 import CompanyDetails from "../components/CompanyDetails";
-// Import your new component
+import KeyMetrics from "../components/KeyMetrics";
 import GradesCard from "../components/GradesCard";
 
 interface StockData {
   symbol: string;
   name: string;
   price: number;
-  // Other stock properties...
+  changePercentage: number;
+  change: number;
+  volume: number;
+  dayLow: number;
+  dayHigh: number;
+  yearHigh: number;
+  yearLow: number;
+  marketCap: number;
+  priceAvg50: number;
+  priceAvg200: number;
+  exchange: string;
+  open: number;
+  previousClose: number;
+  timestamp: number;
 }
+
+
 
 function StockPage() {
   const location = useLocation();
@@ -163,6 +178,8 @@ function StockPage() {
 
           {/* Company Details */}
           <CompanyDetails symbol={stock.symbol} />
+          {/* Key Stats */}
+          <KeyMetrics stock={stock} />
         </div>
 
         {/* Right side - Two Cards */}
