@@ -293,9 +293,9 @@ const StockChart: React.FC<ChartProps> = ({ symbol, onHover }) => {
       {/* Timeframe selector */}
       <div style={{ 
         display: "flex", 
-        justifyContent: "center", 
+        justifyContent: "left", 
         marginTop: "20px",
-        gap: "10px" 
+        gap: "30px" 
       }}>
         {["LIVE", "1D", "1W", "1M", "3M", "YTD", "1Y", "ALL"].map((tf) => (
           <button
