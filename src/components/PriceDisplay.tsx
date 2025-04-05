@@ -30,7 +30,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
       abortControllerRef.current.abort();
     }
     
-    // Update the ref with current symbol
+    // Update the ref with the current symbol
     currentSymbolRef.current = symbol;
     
     // Reset states for new symbol
@@ -50,22 +50,33 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
     };
   }, [symbol, initialPrice]);
 
-  // Simple effect to handle hover state - no realtime updates
+  // Set up an interval to update the price every 10 seconds
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchPriceData();
+    }, 10000); // 10,000ms = 10 seconds
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [symbol]);
+
+  // Effect to handle hover state - no realtime updates while hovering
   useEffect(() => {
     if (isHovering && historicalPrice !== null) {
-      // Just show the historical price when hovering, don't update
+      // Show the historical price when hovering
       setCurrentPrice(historicalPrice);
     } else if (!isHovering && initialPrice) {
-      // When not hovering, show the static price
+      // Revert to the initial price when not hovering
       setCurrentPrice(initialPrice);
     }
   }, [historicalPrice, isHovering, initialPrice]);
 
-  // Fetch price data once
+  // Function to fetch price data
   const fetchPriceData = async () => {
     if (!currentSymbolRef.current) return;
     
-    // Create new abort controller for this request
+    // Abort any previous request before starting a new one
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -83,7 +94,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
       
       const data = await res.json();
       
-      // Make sure this is still the active symbol
+      // Ensure we're still on the active symbol
       if (currentSymbolRef.current !== symbol) {
         return;
       }
@@ -101,7 +112,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
     }
   };
 
-  // Display the appropriate price
+  // Determine which price to display based on hover state
   const displayPrice = isHovering && historicalPrice !== null 
     ? historicalPrice 
     : currentPrice;
