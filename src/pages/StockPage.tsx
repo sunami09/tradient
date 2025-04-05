@@ -4,6 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PriceDisplay from "../components/PriceDisplay";
 import StockChart from "../components/StockChart";
 import TradeCard from "../components/TradeCard";
+import CompanyDetails from "../components/CompanyDetails";
+// Import your new component
+import GradesCard from "../components/GradesCard";
 
 interface StockData {
   symbol: string;
@@ -30,7 +33,6 @@ function StockPage() {
     if (newStockData) {
       setStock(newStockData);
     } else if (location.search) {
-      // If state is missing, extract ticker from URL and fetch data
       const params = new URLSearchParams(location.search);
       const ticker = params.get("ticker");
       if (ticker) {
@@ -39,7 +41,6 @@ function StockPage() {
     }
   }, [location]);
 
-  // Function to fetch stock data if needed
   const fetchStockData = async (symbol: string) => {
     try {
       const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/realtime-prices/${symbol}`;
@@ -69,7 +70,7 @@ function StockPage() {
     }
   };
 
-  // Display a loading state if stock data isn't available yet
+  // If stock data isn't available yet, show a loading spinner
   if (!stock) {
     return (
       <div
@@ -110,7 +111,7 @@ function StockPage() {
       style={{
         background: "#0d0d0d",
         minHeight: "100vh",
-        padding: "2rem",
+        padding: "1rem",
         paddingLeft: "4rem",
         color: "white",
       }}
@@ -151,9 +152,20 @@ function StockPage() {
           <div style={{ marginTop: "2rem", width: "100%" }}>
             <StockChart symbol={stock.symbol} onHover={handleChartHover} />
           </div>
+
+          {/* Horizontal line after the chart */}
+          <hr
+            style={{
+              margin: "1.5rem 0",
+              borderColor: "rgba(255,255,255,0.2)",
+            }}
+          />
+
+          {/* Company Details */}
+          <CompanyDetails symbol={stock.symbol} />
         </div>
 
-        {/* Right side - Trade Card */}
+        {/* Right side - Two Cards */}
         <div
           style={{
             alignSelf: "start",
@@ -162,7 +174,11 @@ function StockPage() {
             paddingTop: "2.9rem",
           }}
         >
+          {/* 1) Trade Card */}
           <TradeCard symbol={stock.symbol} />
+
+          {/* 2) Grades Card (Analyst Ratings) */}
+          <GradesCard symbol={stock.symbol} />
         </div>
       </div>
     </div>
