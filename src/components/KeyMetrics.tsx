@@ -52,62 +52,62 @@ const KeyMetrics: React.FC<KeyMetricsProps> = ({ stock }) => {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: "2rem",
+          gap: "1rem",
           fontSize: "1rem",
           lineHeight: "1.8",
         }}
       >
         {/* 1 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>High Today</p>
-          <p style={{ margin: 0 }}>${stock.dayHigh.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem" }}>High Today</p>
+          <p style={{ margin: 0, fontSize: "0.9rem" }}>${stock.dayHigh.toFixed(2) || "---"}</p>
         </div>
         {/* 2 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>Low Today</p>
-          <p style={{ margin: 0 }}>${stock.dayLow.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold" , fontSize: "0.9rem" }}>Low Today</p>
+          <p style={{ margin: 0 , fontSize: "0.9rem" }}>${stock.dayLow.toFixed(2) || "---"}</p>
         </div>
         {/* 3 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>52-Week High</p>
-          <p style={{ margin: 0 }}>${stock.yearHigh.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold" , fontSize: "0.9rem" }}>52-Week High</p>
+          <p style={{ margin: 0 , fontSize: "0.9rem" }}>${stock.yearHigh.toFixed(2) || "---"}</p>
         </div>
         {/* 4 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>52-Week Low</p>
-          <p style={{ margin: 0 }}>${stock.yearLow.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold" , fontSize: "0.9rem" }}>52-Week Low</p>
+          <p style={{ margin: 0, fontSize: "0.9rem"  }}>${stock.yearLow.toFixed(2) || "---"}</p>
         </div>
 
         {/* 5 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>Open Price</p>
-          <p style={{ margin: 0 }}>${stock.open.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>Open Price</p>
+          <p style={{ margin: 0, fontSize: "0.9rem"  }}>${stock.open.toFixed(2) || "---"}</p>
         </div>
         {/* 6 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>Previous Close</p>
-          <p style={{ margin: 0 }}>${stock.previousClose.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>Previous Close</p>
+          <p style={{ margin: 0, fontSize: "0.9rem"  }}>${stock.previousClose.toFixed(2) || "---"}</p>
         </div>
         {/* 7 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>Volume</p>
-          <p style={{ margin: 0 }}>{formatNumber(stock.volume) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>Volume</p>
+          <p style={{ margin: 0 , fontSize: "0.9rem" }}>{formatNumber(stock.volume) || "---"}</p>
         </div>
         {/* 8 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>Market Cap</p>
-          <p style={{ margin: 0 }}>{formatNumber(stock.marketCap) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>Market Cap</p>
+          <p style={{ margin: 0 , fontSize: "0.9rem" }}>{formatNumber(stock.marketCap) || "---"}</p>
         </div>
 
         {/* 9 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>50-Day Avg</p>
-          <p style={{ margin: 0 }}>${stock.priceAvg50.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>50-Day Avg</p>
+          <p style={{ margin: 0, fontSize: "0.9rem"  }}>${stock.priceAvg50.toFixed(2) || "---"}</p>
         </div>
         {/* 10 */}
         <div>
-          <p style={{ margin: 0, fontWeight: "bold" }}>200-Day Avg</p>
-          <p style={{ margin: 0 }}>${stock.priceAvg200.toFixed(2) || "---"}</p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "0.9rem"  }}>200-Day Avg</p>
+          <p style={{ margin: 0 , fontSize: "0.9rem" }}>${stock.priceAvg200.toFixed(2) || "---"}</p>
         </div>
       </div>
     </div>

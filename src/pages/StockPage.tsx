@@ -7,7 +7,7 @@ import TradeCard from "../components/TradeCard";
 import CompanyDetails from "../components/CompanyDetails";
 import KeyMetrics from "../components/KeyMetrics";
 import GradesCard from "../components/GradesCard";
-
+import CompanyNews from "../components/CompanyNews";
 interface StockData {
   symbol: string;
   name: string;
@@ -180,6 +180,8 @@ function StockPage() {
           <CompanyDetails symbol={stock.symbol} />
           {/* Key Stats */}
           <KeyMetrics stock={stock} />
+          {/* News Section */}
+          <CompanyNews symbol={stock.symbol} />
         </div>
 
         {/* Right side - Two Cards */}
