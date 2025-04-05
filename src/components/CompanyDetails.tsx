@@ -1,10 +1,9 @@
-// src/components/CompanyDetails.tsx
 import React, { useEffect, useState } from "react";
 
 interface CompanyProfile {
   symbol: string;
   description: string;
-  marketCap: number;
+  ceo: string; // Added CEO field
   industry: string;
   sector: string;
   ipoDate: string;
@@ -76,16 +75,13 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
   // Extract fields with fallback to "-" if missing
   const {
     description = "-",
-    marketCap,
+    ceo = "-", // Use CEO field
     industry = "-",
     sector = "-",
     ipoDate = "-",
     website,
     image,
   } = company;
-
-  // Convert marketCap to a more readable string if present
-  const marketCapValue = marketCap ? marketCap.toLocaleString() : "-";
 
   // Heading: either image hyperlinked to website or "About"
   let heading: React.ReactNode;
@@ -100,7 +96,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
         <img
           src={image}
           alt="Company Logo"
-          style={{ maxHeight: "7vh", maxWidth: "100%" }} // Increased size
+          style={{ maxHeight: "7vh", maxWidth: "100%" }}
         />
       </a>
     );
@@ -140,13 +136,13 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
           gap: "1rem",
           lineHeight: "1.6",
-          fontSize: "0.9rem", // Slightly smaller text for stats
+          fontSize: "0.9rem",
         }}
       >
-        {/* Column 1 */}
+        {/* Column 1 - Now displays CEO */}
         <div>
-          <p style={{ margin: "0", fontWeight: "bold" }}>Market Cap</p>
-          <p style={{ margin: "0" }}>{marketCapValue}</p>
+          <p style={{ margin: "0", fontWeight: "bold" }}>CEO</p>
+          <p style={{ margin: "0" }}>{ceo}</p>
         </div>
         <div>
           <p style={{ margin: "0", fontWeight: "bold" }}>Industry</p>
@@ -176,9 +172,8 @@ function truncateToSentences(text: string, sentenceCount: number): string {
 
   const sentences = text.split(". ").filter((s) => s.trim().length > 0);
   if (sentences.length <= sentenceCount) {
-    return text; // Nothing to truncate
+    return text;
   }
-  // Join only the requested number of sentences, add a final period if missing.
   const truncated = sentences.slice(0, sentenceCount).join(". ");
   return truncated.endsWith(".") ? truncated : truncated + ".";
 }
