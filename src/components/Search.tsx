@@ -1,7 +1,22 @@
 import { FiSearch } from "react-icons/fi";
 import { useState, useEffect, useRef } from "react";
 
-function SearchDropdown(props) {
+interface SearchDropdownProps {
+    history: string[];
+    showHistory: boolean;
+    results: Company[];
+    handleSearch: (e: React.MouseEvent, query: string) => void;
+    getSearchResults: (query: string) => void;
+    setHistory: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+interface Company {
+    symbol: string;
+    companyName: string;
+}
+  
+
+function SearchDropdown(props: SearchDropdownProps) {
     const clearHistory = () => {
         localStorage.clear();
         props.setHistory([]);
@@ -10,9 +25,9 @@ function SearchDropdown(props) {
     if (!props.showHistory) {
         return (
         <div style={{ position: "absolute", background: "black", border: "1px solid green", padding: "1rem" }}>
-            {props.results.slice().reverse().map((result, index) => (
+            {props.results.slice().reverse().map((result: Company, index: number) => (
                 <div key={result.symbol || index}>
-                    <p key={index} style={{ cursor: "pointer" }} onClick={(e) => {
+                    <p key={index} style={{ cursor: "pointer" }} onClick={(e: React.MouseEvent<HTMLParagraphElement>) => {
                         e.preventDefault();
                         props.handleSearch(e, result.symbol)
                     }}>{result.symbol} - {result.companyName}</p>
@@ -27,8 +42,8 @@ function SearchDropdown(props) {
         <div>
             <button onClick={clearHistory}>Clear Search History</button>
             <div style={{ position: "absolute", background: "black", border: "1px solid green", padding: "1rem" }}>
-                {props.history.slice().reverse().map((result, index) => (
-                    <p key={index} style={{ cursor: "pointer" }} onClick={(e) => {
+                {props.history.slice().reverse().map((result: string, index: number) => (
+                    <p key={index} style={{ cursor: "pointer" }} onClick={(e: React.MouseEvent<HTMLParagraphElement>) => {
                         e.preventDefault();
                         props.handleSearch(e, result)
                     }}>{result}</p>
@@ -38,12 +53,20 @@ function SearchDropdown(props) {
     ) }
 }
 
-function Search(props) {
-    const [history, setHistory] = useState(JSON.parse(localStorage.getItem('searchHistory')) || []);
-    const [results, setResults] = useState([]);
+interface SearchProps {
+    query: string;
+    setQuery: (query: string) => void;
+    navigate: (url: string, state?: object) => void;
+}
+
+function Search(props: SearchProps) {
+    const [history, setHistory] = useState<string[]>(
+        () => JSON.parse(localStorage.getItem('searchHistory') || '[]')
+      );   
+    const [results, setResults] = useState<Company[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [showHistory, setShowHistory] = useState(true);
-    const companyList = useRef([]);
+    const companyList = useRef<Company[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Hide search dropdown when click outside of form
@@ -62,8 +85,8 @@ function Search(props) {
 
     // Add search history to localStorage, limit of 5 items
     const addToHistory = (searchItem: string) => {
-        let cache = JSON.parse(localStorage.getItem('searchHistory')) || [];
-        cache = cache.filter(item => item !== searchItem);
+        let cache: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        cache = cache.filter((item: string) => item !== searchItem);
         cache.push(searchItem);
         if (cache.length > 5) {
             cache.shift();
@@ -96,7 +119,7 @@ function Search(props) {
     }, []);
 
     // Filter company list for search input
-    const getSearchResults = async (query) => {
+    const getSearchResults = async (query: string) => {
         const text = query.toLowerCase();
         if (!text) {
             setShowHistory(true);
@@ -110,7 +133,7 @@ function Search(props) {
         }
     }
 
-    const handleSearch = async (e: React.FormEvent, query) => {
+    const handleSearch = async (e: React.FormEvent, query: string) => {
         e.preventDefault();
         if (!query.trim()) return;
 
