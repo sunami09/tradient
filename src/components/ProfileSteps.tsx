@@ -1,7 +1,7 @@
-// src/components/ProfileSteps.tsx
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-// Types for the different step components
+// Props interfaces
 export interface ProfilePictureStepProps {
   onFileChange: (file: File | null) => void;
   hasFile: boolean;
@@ -9,6 +9,7 @@ export interface ProfilePictureStepProps {
 
 export interface NameInputStepProps {
   profilePicUrl: string | null;
+  firstName: string;
   onNameChange: (name: string) => void;
 }
 
@@ -17,37 +18,23 @@ export interface LastNameInputStepProps {
   onLastNameChange: (lastName: string) => void;
 }
 
-// Profile Picture Step Component with custom upload button
-export function ProfilePictureStep({ onFileChange, hasFile }: ProfilePictureStepProps) {
+// Profile picture step
+export function ProfilePictureStep({
+  onFileChange,
+  hasFile,
+}: ProfilePictureStepProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string>("");
+  const [fileName, setFileName] = useState("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    if (file) {
-      setFileName(file.name);
-    }
+    if (file) setFileName(file.name);
     onFileChange(file);
   };
-
-  // Trigger file input click when button is clicked
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
+  const handleButtonClick = () => fileInputRef.current?.click();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "100%",
-        opacity: 0,
-        animation: "fadeIn 0.5s ease-in forwards",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
       <input
         type="file"
         ref={fileInputRef}
@@ -55,7 +42,6 @@ export function ProfilePictureStep({ onFileChange, hasFile }: ProfilePictureStep
         onChange={handleFileChange}
         style={{ display: "none" }}
       />
-
       <button
         onClick={handleButtonClick}
         className={hasFile ? "upload-button file-selected" : "upload-button"}
@@ -89,148 +75,97 @@ export function ProfilePictureStep({ onFileChange, hasFile }: ProfilePictureStep
       >
         {hasFile ? "Picture Captured ✓" : "Upload Profile Picture"}
       </button>
-
       {hasFile && fileName && (
-        <div
-          style={{
-            marginTop: "12px",
-            fontSize: "0.9rem",
-            color: "#00ff99",
-            opacity: 0,
-            animation: "fadeIn 0.5s ease-in forwards",
-          }}
-        >
+        <div style={{ marginTop: "12px", fontSize: "0.9rem", color: "#00ff99", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
           {fileName}
         </div>
       )}
-
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          
-          @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-          }
-          
-          @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-          }
-          
-          .upload-button.file-selected {
-            animation: pulse 1.5s infinite ease-in-out, float 3s infinite ease-in-out;
-          }
-        `}
-      </style>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes pulse { 0% { transform: scale(1) } 50% { transform: scale(1.05) } 100% { transform: scale(1) } }
+        @keyframes float { 0% { transform: translateY(0) } 50% { transform: translateY(-5px) } 100% { transform: translateY(0) } }
+        .upload-button.file-selected { animation: pulse 1.5s infinite ease-in-out, float 3s infinite ease-in-out; }
+      `}</style>
     </div>
   );
 }
 
-// First Name Input Step Component
-export function NameInputStep({ profilePicUrl, onNameChange }: NameInputStepProps) {
+// First name step
+export function NameInputStep({
+  profilePicUrl,
+  firstName,
+  onNameChange,
+}: NameInputStepProps) {
+  const navigate = useNavigate();
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center", // Center container below the picture
-        width: "100%",
-        opacity: 0,
-        animation: "fadeIn 0.5s ease-in forwards",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
       {profilePicUrl && (
-        <div
-          style={{
-            width: "150px",
-            height: "150px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            margin: "0 auto 30px auto",
-            border: "2px solid #333",
-            boxShadow: "0 0 15px rgba(0, 255, 153, 0.3)",
-          }}
-        >
-          <img
-            src={profilePicUrl}
-            alt="Profile"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+        <div style={{ width: "150px", height: "150px", borderRadius: "50%", overflow: "hidden", margin: "0 auto 30px", border: "2px solid #333", boxShadow: "0 0 15px rgba(0, 255, 153, 0.3)" }}>
+          <img src={profilePicUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       )}
-
       <input
         autoFocus
         type="text"
         placeholder="First name"
+        value={firstName}
         onChange={(e) => onNameChange(e.target.value)}
         className="minimal-input"
       />
-
-      <style>
-        {`
-          .minimal-input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            width: 80%;
-            margin-bottom: 20px;
-            font-size: 2rem;
-            caret-color: #555;
-            text-align: center;
-          }
-
-          .minimal-input::placeholder {
-            color: #555;
-            font-size: 2rem;
-            text-align: center;
-          }
-        `}
-      </style>
+      {firstName && (
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <p>Hey {firstName}, how's it going?</p>
+          <button
+            onClick={() => navigate("/tradingprofile")}
+            style={{
+              padding: "0.7rem 1.5rem",
+              borderRadius: "999px",
+              background: "#00ff99",
+              color: "black",
+              fontWeight: "bold",
+              cursor: "pointer",
+              marginTop: "0.5rem",
+            }}
+          >
+            Complete your trading profile
+          </button>
+        </div>
+      )}
+      <style>{`
+        .minimal-input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: white;
+          width: 80%;
+          margin-bottom: 20px;
+          font-size: 2rem;
+          caret-color: #555;
+          text-align: center;
+        }
+        .minimal-input::placeholder {
+          color: #555;
+          font-size: 2rem;
+          text-align: center;
+        }
+      `}</style>
     </div>
   );
 }
 
-// Last Name Input Step Component
-export function LastNameInputStep({ profilePicUrl, onLastNameChange }: LastNameInputStepProps) {
+// Last name step
+export function LastNameInputStep({
+  profilePicUrl,
+  onLastNameChange,
+}: LastNameInputStepProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center", // Center container below the picture
-        width: "100%",
-        opacity: 0,
-        animation: "fadeIn 0.5s ease-in forwards",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
       {profilePicUrl && (
-        <div
-          style={{
-            width: "150px",
-            height: "150px",
-            borderRadius: "50%",
-            overflow: "hidden",
-            margin: "0 auto 30px auto",
-            border: "2px solid #333",
-            boxShadow: "0 0 15px rgba(0, 255, 153, 0.3)",
-          }}
-        >
-          <img
-            src={profilePicUrl}
-            alt="Profile"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+        <div style={{ width: "150px", height: "150px", borderRadius: "50%", overflow: "hidden", margin: "0 auto 30px", border: "2px solid #333", boxShadow: "0 0 15px rgba(0, 255, 153, 0.3)" }}>
+          <img src={profilePicUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
       )}
-
       <input
         autoFocus
         type="text"
@@ -238,28 +173,24 @@ export function LastNameInputStep({ profilePicUrl, onLastNameChange }: LastNameI
         onChange={(e) => onLastNameChange(e.target.value)}
         className="minimal-input"
       />
-
-      <style>
-        {`
-          .minimal-input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            width: 80%;
-            margin-bottom: 20px;
-            font-size: 2rem;
-            caret-color: #555;
-            text-align: center;
-          }
-
-          .minimal-input::placeholder {
-            color: #555;
-            font-size: 2rem;
-            text-align: center;
-          }
-        `}
-      </style>
+      <style>{`
+        .minimal-input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: white;
+          width: 80%;
+          margin-bottom: 20px;
+          font-size: 2rem;
+          caret-color: #555;
+          text-align: center;
+        }
+        .minimal-input::placeholder {
+          color: #555;
+          font-size: 2rem;
+          text-align: center;
+        }
+      `}</style>
     </div>
   );
 }
