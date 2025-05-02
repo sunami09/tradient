@@ -183,7 +183,7 @@ const StockChart: React.FC<ChartProps> = ({ symbol, onHover }) => {
   setLoading(true);
   setError(null);
   try {
-    const baseUrl = 'https://proxy-server-276254039180.us-west2.run.app';
+    const baseUrl = `${import.meta.env.VITE_PROXY_API_BASE_URL}`;
     let endpoint: string;
     switch (timeframe) {
       case 'LIVE':
