@@ -3,8 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate, Link } from "react-router-dom";
-import { FiSearch } from "react-icons/fi";
-
+import Search from "./Search"
 function NavBar() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -17,19 +16,19 @@ function NavBar() {
     navigate("/login");
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  // const handleSearch = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!query.trim()) return;
 
-    const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/realtime-prices/${query}`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      navigate(`/stock?ticker=${query}`, { state: { stock: data } });
-    } catch (err) {
-      console.error("Search failed", err);
-    }
-  };
+  //   const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/realtime-prices/${query}`;
+  //   try {
+  //     const res = await fetch(url);
+  //     const data = await res.json();
+  //     navigate(`/stock?ticker=${query}`, { state: { stock: data } });
+  //   } catch (err) {
+  //     console.error("Search failed", err);
+  //   }
+  // };
 
   // Close dropdown if clicking outside
   useEffect(() => {
@@ -83,7 +82,7 @@ function NavBar() {
         </a>
       </h2>
 
-      <form
+      {/* <form
         onSubmit={handleSearch}
         style={{
           position: "relative",
@@ -117,7 +116,8 @@ function NavBar() {
             outline: "none",
           }}
         />
-      </form>
+      </form> */}
+      <Search query={query} setQuery={setQuery} navigate={navigate} />
 
       <div
         style={{
