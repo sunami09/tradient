@@ -26,7 +26,7 @@ const CompanyDetails: React.FC<CompanyDetailsProps> = ({ symbol }) => {
       try {
         setLoading(true);
         const res = await fetch(
-          `https://proxy-server-532651853525.us-west2.run.app/companyProfile/${symbol}`
+          `https://proxy-server-276254039180.us-west2.run.app/companyProfile/${symbol}`
         );
         if (!res.ok) {
           throw new Error(`Server responded with ${res.status}`);

@@ -27,7 +27,7 @@ const CompanyNews: React.FC<CompanyNewsProps> = ({ symbol }) => {
       setLoading(true);
       try {
         const res = await fetch(
-          `https://proxy-server-532651853525.us-west2.run.app/companyNews/${symbol}`
+          `https://proxy-server-276254039180.us-west2.run.app/companyNews/${symbol}`
         );
         if (!res.ok) {
           throw new Error(`Failed to fetch news: ${res.status}`);

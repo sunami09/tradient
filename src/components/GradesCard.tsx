@@ -26,7 +26,7 @@ const GradesCard: React.FC<GradesCardProps> = ({ symbol }) => {
       setLoading(true);
       try {
         const res = await fetch(
-          `https://proxy-server-532651853525.us-west2.run.app/stockgrades/${symbol}`
+          `https://proxy-server-276254039180.us-west2.run.app/stockgrades/${symbol}`
         );
         if (!res.ok) {
           throw new Error(`Server responded with ${res.status}`);

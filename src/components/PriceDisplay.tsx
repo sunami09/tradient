@@ -128,7 +128,7 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
       >
         ${displayPrice.toFixed(2)}
         {isHovering && <span style={{ fontSize: "1rem", marginLeft: "10px", opacity: 0.7 }}>
-          (Historical)
+          
         </span>}
       </h3>
       
