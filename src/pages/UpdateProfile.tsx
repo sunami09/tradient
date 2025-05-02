@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingFlow, OnboardingStep } from "../components/OnboardingFlow";
-import { ProfilePictureStep, NameInputStep, LastNameInputStep } from "../components/ProfileSteps";
+import {
+  ProfilePictureStep,
+  NameInputStep,
+  LastNameInputStep,
+} from "../components/ProfileSteps";
 import { auth, db, storage } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -33,10 +37,8 @@ function UpdateProfilePage() {
     if (!auth.currentUser || !profilePicFile) {
       return "";
     }
-
     const userUid = auth.currentUser.uid;
     const storageRef = ref(storage, `profile-pictures/${userUid}`);
-
     try {
       await uploadBytes(storageRef, profilePicFile);
       const downloadUrl = await getDownloadURL(storageRef);
@@ -48,16 +50,14 @@ function UpdateProfilePage() {
     }
   };
 
-  // Save profile data to Firestore (saving firstName, lastName and profilePic)
+  // Save profile data to Firestore
   const saveProfileData = async () => {
     if (!auth.currentUser) {
       alert("No user logged in!");
       return;
     }
-
     const userUid = auth.currentUser.uid;
     const docRef = doc(db, "users", userUid);
-
     try {
       await setDoc(
         docRef,
@@ -74,7 +74,7 @@ function UpdateProfilePage() {
     }
   };
 
-  // Define onboarding steps
+  // Onboarding steps
   const steps: OnboardingStep[] = [
     {
       message: "Let's start with how you'd like to present yourself.",
@@ -85,20 +85,19 @@ function UpdateProfilePage() {
         />
       ),
       onNext: async () => {
-        // Upload profile picture when moving to next step
         const url = await uploadProfilePicture();
         setProfilePicUrl(url);
       },
     },
     {
-      message: "So, What should we call you?",
+      message: "So, what should we call you?",
       rightPaneContent: (
         <NameInputStep
           profilePicUrl={profilePicUrl}
+          firstName={firstName}
           onNameChange={handleNameChange}
         />
       ),
-      // No database update here, we'll wait until the last step
       onNext: async () => {},
     },
     {
@@ -110,13 +109,12 @@ function UpdateProfilePage() {
         />
       ),
       onNext: async () => {
-        // Save profile data when completing this step
         await saveProfileData();
       },
     },
   ];
 
-  // Handle completion of all steps
+  // After all steps
   const handleComplete = () => {
     navigate("/profile");
   };
