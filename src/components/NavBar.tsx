@@ -58,11 +58,23 @@ function NavBar() {
       <Search />
 
       <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <Link
+          to="/"
+          style={{
+            padding: "0.5rem 0.6rem",
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Investing
+        </Link>
+        
         <div ref={dropdownRef} style={{ position: "relative" }}>
           <div
             onClick={() => setShowAccount((v) => !v)}
             style={{
-              padding: "0.5rem 1.2rem",
+              padding: "0.5rem 1rem",
               borderRadius: 4,
               background: showAccount ? "#1e1e1e" : "transparent",
               cursor: "pointer",
