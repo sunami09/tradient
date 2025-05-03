@@ -6,6 +6,8 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 
 type Env = "paper" | "live";
 
+const PROXY_URL = import.meta.env.VITE_PROXY_API_BASE_URL
+
 function Toast({
   message,
   onClose,
@@ -66,15 +68,39 @@ function TradingProfile() {
         setInitialLoading(false);
         return;
       }
+      
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
         const data = snap.data();
         if (data.alpacaKey && data.alpacaSecret) {
           setEnv((data.alpacaEnv as Env) || "paper");
-          setApiKey(data.alpacaKey);
-          setApiSecret(data.alpacaSecret);
-          setIsVerified(true);
-          setIsEditing(false);
+          
+          // We have encrypted credentials - verify they still work
+          try {
+            const verifyResponse = await fetch(`${PROXY_URL}/verify-encrypted`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                encryptedKey: data.alpacaKey,
+                encryptedSecret: data.alpacaSecret,
+                env: data.alpacaEnv || 'paper'
+              })
+            });
+            
+            const verifyData = await verifyResponse.json();
+            setIsVerified(verifyData.success);
+            
+            // Don't show the actual keys, just placeholders
+            setApiKey("••••••••••••••••••••");
+            setApiSecret("••••••••••••••••••••");
+            setIsEditing(false);
+          } catch (error) {
+            console.error("Error verifying credentials:", error);
+            setIsVerified(false);
+            setIsEditing(true);
+          }
         }
       }
       setInitialLoading(false);
@@ -90,6 +116,7 @@ function TradingProfile() {
   const verifyCredentials = async () => {
     setIsVerifying(true);
     try {
+      // Direct verification with Alpaca
       const res = await fetch(`${getBaseUrl()}/v2/account`, {
         headers: {
           "APCA-API-KEY-ID": apiKey.trim(),
@@ -113,19 +140,43 @@ function TradingProfile() {
       setToastMessage("⚠️ Not logged in");
       return;
     }
+    
     try {
+      // First encrypt the credentials using your proxy
+      const encryptResponse = await fetch(`${PROXY_URL}/encrypt-credentials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: apiKey.trim(),
+          apiSecret: apiSecret.trim(),
+          env: env
+        })
+      });
+      
+      const encryptData = await encryptResponse.json();
+      
+      if (!encryptData.success) {
+        throw new Error(encryptData.message || 'Failed to encrypt credentials');
+      }
+      
+      // Save the encrypted credentials to Firebase
       await setDoc(
         doc(db, "users", user.uid),
         {
           alpacaEnv: env,
-          alpacaKey: apiKey.trim(),
-          alpacaSecret: apiSecret.trim(),
+          alpacaKey: encryptData.encryptedKey,     // Store encrypted key
+          alpacaSecret: encryptData.encryptedSecret, // Store encrypted secret
+          lastUpdated: new Date().toISOString()
         },
         { merge: true }
       );
+      
       navigate("/profile");
-    } catch {
-      setToastMessage("❌ Save failed.");
+    } catch (error) {
+      console.error('Error saving credentials:', error);
+      setToastMessage(`❌ Save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -155,7 +206,7 @@ function TradingProfile() {
         }}
       >
         To get your API Key & Secret, sign up at Alpaca and in your dashboard go
-        to “API Keys” to generate them.
+        to "API Keys" to generate them.
       </p>
 
       {/* Toggle switch */}

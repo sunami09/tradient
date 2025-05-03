@@ -54,7 +54,7 @@ const PortfolioValueDisplay: React.FC<PortfolioValueDisplayProps> = ({
 
       abortControllerRef.current = new AbortController();
       try {
-        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?apikey=${alpacaKey}&secret=${alpacaSecret}&period=1D&timeframe=1H`;
+        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}&period=1D&timeframe=1H`;
         const resp = await fetch(url, { signal: abortControllerRef.current.signal });
         if (!resp.ok) throw new Error(`Fetch error: ${resp.status}`);
         const data: { prices: number[] } = await resp.json();
@@ -93,7 +93,7 @@ const PortfolioValueDisplay: React.FC<PortfolioValueDisplayProps> = ({
         setIsLoading(true);
         abortControllerRef.current = new AbortController();
         try {
-          const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?apikey=${alpacaKey}&secret=${alpacaSecret}&period=1D&timeframe=1H`;
+          const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}&period=1D&timeframe=1H`;
           const resp = await fetch(url, { signal: abortControllerRef.current.signal });
           if (!resp.ok) throw new Error(`Fetch error: ${resp.status}`);
           const d: { prices: number[] } = await resp.json();
@@ -128,7 +128,7 @@ const PortfolioValueDisplay: React.FC<PortfolioValueDisplayProps> = ({
       abortControllerRef.current?.abort();
       (async () => {
         try {
-          const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?apikey=${alpacaKey}&secret=${alpacaSecret}&period=1D&timeframe=1H`;
+          const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}&period=1D&timeframe=1H`;
           const resp = await fetch(url);
           if (!resp.ok) throw new Error(`Fetch error: ${resp.status}`);
           const data: { prices: number[] } = await resp.json();

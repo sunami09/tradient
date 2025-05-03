@@ -60,7 +60,7 @@ function HomePage() {
   // Validate Alpaca credentials by calling the account endpoint
   const validateAlpacaCredentials = async (apiKey: string, apiSecret: string) => {
     try {
-      const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/account?apikey=${apiKey}&secret=${apiSecret}`;
+      const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/account?encryptedKey=${apiKey}&encryptedSecret=${apiSecret}`;
       const response = await fetch(url);
       
       setValidCredentials(response.ok);
