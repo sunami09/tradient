@@ -194,7 +194,7 @@ const ChartRenderer: React.FC<InnerChartProps> = ({ data, onHover }) => {
       style={{ 
         position: 'relative', 
         width: '100%', 
-        height: '300px',
+        height: '500px',
         cursor: 'crosshair'
       }}
       onMouseMove={handleMouseMove}
@@ -361,7 +361,7 @@ const PortfolioChart: React.FC<ChartProps> = ({ onHover }) => {
       {/* Chart container */}
       <div style={{ position: "relative" }}>
         {loading ? (
-          <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ height: "500px", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{
               width: '30px',
               height: '30px',
@@ -374,7 +374,7 @@ const PortfolioChart: React.FC<ChartProps> = ({ onHover }) => {
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : error ? (
-          <div style={{ height: "300px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ff6b6b" }}>
+          <div style={{ height: "500px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ff6b6b" }}>
             {error}
           </div>
         ) : (

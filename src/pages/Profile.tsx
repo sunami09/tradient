@@ -80,14 +80,18 @@ function Profile() {
           fontFamily: "sans-serif",
         }}
       >
-        <button className="flutter-button">
-          <Link
-            to="/update-profile"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
+        <Link
+          to="/update-profile"
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+            display: "inline-block", // This is important
+          }}
+        >
+          <button className="flutter-button" style={{ width: "100%" }}>
             Update Your Profile
-          </Link>
-        </button>
+          </button>
+        </Link>
 
         <style>
           {`

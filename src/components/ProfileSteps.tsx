@@ -113,25 +113,7 @@ export function NameInputStep({
         onChange={(e) => onNameChange(e.target.value)}
         className="minimal-input"
       />
-      {firstName && (
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
-          <p>Hey {firstName}, how's it going?</p>
-          <button
-            onClick={() => navigate("/tradingprofile")}
-            style={{
-              padding: "0.7rem 1.5rem",
-              borderRadius: "999px",
-              background: "#00ff99",
-              color: "black",
-              fontWeight: "bold",
-              cursor: "pointer",
-              marginTop: "0.5rem",
-            }}
-          >
-            Complete your trading profile
-          </button>
-        </div>
-      )}
+      
       <style>{`
         .minimal-input {
           background: transparent;
