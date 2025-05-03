@@ -310,7 +310,7 @@ const PortfolioChart: React.FC<ChartProps> = ({ onHover }) => {
       const period = getPeriodParam(timeframe);
       const tfParam = getTimeframeParam(timeframe);
       
-      const endpoint = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?apikey=${alpacaKey}&secret=${alpacaSecret}&period=${period}&timeframe=${tfParam}`;
+      const endpoint = `${import.meta.env.VITE_PROXY_API_BASE_URL}/portfolio?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}&period=${period}&timeframe=${tfParam}`;
       
       const response = await fetch(endpoint, {
         signal: abortControllerRef.current.signal

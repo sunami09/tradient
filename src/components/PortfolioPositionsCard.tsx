@@ -37,7 +37,7 @@ const PortfolioPositionsCard: React.FC = () => {
       
       setLoading(true);
       try {
-        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/positions?apikey=${alpacaKey}&secret=${alpacaSecret}`;
+        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/positions?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}`;
         const response = await fetch(url);
         
         if (!response.ok) {

@@ -37,7 +37,7 @@ const RecentOrdersCard: React.FC = () => {
       setLoading(true);
       try {
         // Get the 10 most recent orders
-        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/orders?apikey=${alpacaKey}&secret=${alpacaSecret}&limit=10`;
+        const url = `${import.meta.env.VITE_PROXY_API_BASE_URL}/orders?encryptedKey=${alpacaKey}&encryptedSecret=${alpacaSecret}&limit=10`;
         const response = await fetch(url);
         
         if (!response.ok) {
