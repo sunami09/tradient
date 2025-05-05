@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface ProfileData {
   firstName: string;
@@ -17,6 +17,7 @@ interface ProfileData {
 function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -30,7 +31,13 @@ function Profile() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setProfile(docSnap.data() as ProfileData);
+          const userData = docSnap.data() as ProfileData;
+          setProfile(userData);
+          
+          // Check if user has a firstName, if not redirect to update profile
+          if (!userData.firstName || userData.firstName.trim() === "") {
+            navigate("/update-profile");
+          }
         } else {
           setProfile(null);
         }
@@ -42,7 +49,7 @@ function Profile() {
     };
 
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   // Loading State
   if (loading) {

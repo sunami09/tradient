@@ -94,7 +94,7 @@ function TradingProfile() {
             
             // Don't show the actual keys, just placeholders
             setApiKey("••••••••••••••••••••");
-            setApiSecret("••••••••••••••••••••");
+            setApiSecret("••••••••••••••••••••••••••••••");
             setIsEditing(false);
           } catch (error) {
             console.error("Error verifying credentials:", error);
@@ -173,7 +173,7 @@ function TradingProfile() {
         { merge: true }
       );
       
-      navigate("/profile");
+      navigate("/");
     } catch (error) {
       console.error('Error saving credentials:', error);
       setToastMessage(`❌ Save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
