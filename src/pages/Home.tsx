@@ -273,7 +273,7 @@ function HomePage() {
         className="content"
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 500px",
+          gridTemplateColumns: "1fr 450px",
           gap: "2rem",
           maxWidth: "90vw",
           margin: "0 auto",
