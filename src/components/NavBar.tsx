@@ -70,6 +70,18 @@ function NavBar() {
           Investing
         </Link>
         
+        <Link
+          to="/community"
+          style={{
+            padding: "0.5rem 0.6rem",
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Community
+        </Link>
+        
         <div ref={dropdownRef} style={{ position: "relative" }}>
           <div
             onClick={() => setShowAccount((v) => !v)}

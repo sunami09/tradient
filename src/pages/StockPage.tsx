@@ -8,6 +8,8 @@ import CompanyDetails from "../components/CompanyDetails";
 import KeyMetrics from "../components/KeyMetrics";
 import GradesCard from "../components/GradesCard";
 import CompanyNews from "../components/CompanyNews";
+import CurrentPositionCard from "../components/CurrentPositionCard"; // Import our new component
+
 interface StockData {
   symbol: string;
   name: string;
@@ -27,8 +29,6 @@ interface StockData {
   previousClose: number;
   timestamp: number;
 }
-
-
 
 function StockPage() {
   const location = useLocation();
@@ -168,7 +168,10 @@ function StockPage() {
             <StockChart symbol={stock.symbol} onHover={handleChartHover} />
           </div>
 
-          {/* Horizontal line after the chart */}
+          {/* Current Position Card - Only shows if user has position in this stock */}
+          <CurrentPositionCard symbol={stock.symbol} />
+
+          {/* Horizontal line after the chart and position card */}
           <hr
             style={{
               margin: "1.5rem 0",
