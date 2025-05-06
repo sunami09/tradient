@@ -23,7 +23,7 @@ const GeneralNews: React.FC = () => {
       try {
         // For now, using AAPL as placeholder as mentioned
         const res = await fetch(
-          `${import.meta.env.VITE_PROXY_API_BASE_URL}/companyNews/AAPL`
+          `${import.meta.env.VITE_PROXY_API_BASE_URL}/companyNews/generalNews`
         );
         if (!res.ok) {
           throw new Error(`Failed to fetch news: ${res.status}`);

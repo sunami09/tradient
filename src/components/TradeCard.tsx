@@ -1,10 +1,11 @@
 // src/components/TradeCard.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import { auth, db } from '../firebase';                // your firebase init
 import { doc, getDoc } from 'firebase/firestore';
 
 type TabType    = 'buy' | 'sell';
 type BuyInType  = 'Dollars' | 'Shares';
+type OrderStatus = 'idle' | 'loading' | 'success' | 'error';
 
 interface TradeCardProps {
   symbol?: string;
@@ -14,16 +15,41 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
   const [activeTab, setActiveTab]       = useState<TabType>('buy');
   const [buyInType, setBuyInType]       = useState<BuyInType>('Dollars');
   const [amount, setAmount]             = useState<string>('');
-  const [loading, setLoading]           = useState<boolean>(false);
+  const [orderStatus, setOrderStatus]   = useState<OrderStatus>('idle');
   const [error, setError]               = useState<string | null>(null);
   const [successMsg, setSuccessMsg]     = useState<string | null>(null);
   const [showBuyOrderDropdown, setShowBuyOrderDropdown] = useState(false);
   const [showBuyInDropdown, setShowBuyInDropdown]       = useState(false);
+  const [showToast, setShowToast]       = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Clear any toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  // Reset button status after 2 seconds on success or error
+  useEffect(() => {
+    if (orderStatus === 'success' || orderStatus === 'error') {
+      const timer = setTimeout(() => {
+        setOrderStatus('idle');
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [orderStatus]);
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setError(null);
     setSuccessMsg(null);
+    setOrderStatus('idle');
   };
 
   const toggleBuyOrderDropdown = () => {
@@ -43,23 +69,34 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
     setAmount(e.target.value);
   };
 
+  const displayToast = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+  };
+
   const handleReviewOrder = async () => {
+    // Reset previous states
     setError(null);
     setSuccessMsg(null);
+    setOrderStatus('loading');
 
+    // Validation checks
     const user = auth.currentUser;
     if (!user) {
       setError('You must be signed in to place an order.');
+      setOrderStatus('error');
+      displayToast('You must be signed in to place an order.');
       return;
     }
 
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt <= 0) {
       setError('Please enter a valid amount.');
+      setOrderStatus('error');
+      displayToast('Please enter a valid amount.');
       return;
     }
 
-    setLoading(true);
     try {
       // 1) Fetch encrypted credentials from Firestore
       const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -80,10 +117,13 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
       };
 
       // If buying/selling by dollar amount use `notional`, otherwise `qty`
+      // Make sure to set qty explicitly to null when using notional
       if (buyInType === 'Dollars') {
         payload.notional = amt;
+        payload.qty = null; // Explicitly set qty to null when using notional
       } else {
         payload.qty = amt;
+        payload.notional = null; // Explicitly set notional to null when using qty
       }
 
       // 3) Call your Flask backend
@@ -101,12 +141,96 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
       }
 
       // 4) Success
-      setSuccessMsg(`Order placed! ID: ${json.order.id}`);
+      setOrderStatus('success');
+      setSuccessMsg(`Order placed successfully`);
       setAmount('');
     } catch (err: any) {
+      setOrderStatus('error');
+      // Handle specific error messages from the API
+      if (err.message && err.message.includes('account is not allowed to short')) {
+        displayToast('Error: Account is not allowed to short');
+      } else {
+        displayToast(`Error: ${err.message || 'Unknown error'}`);
+      }
       setError(err.message || 'Unknown error');
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  // Helper to determine button style based on order status
+  const getButtonStyle = (): React.CSSProperties => {
+    const baseStyle: React.CSSProperties = {
+      width: '100%',
+      padding: '15px',
+      border: 'none',
+      borderRadius: '30px',
+      fontWeight: 'bold' as const,
+      fontSize: '16px',
+      cursor: orderStatus === 'loading' ? 'not-allowed' : 'pointer',
+      marginBottom: '20px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: '8px',
+      position: 'relative',
+      overflow: 'hidden'
+    };
+
+    // Status-specific styles
+    if (orderStatus === 'success') {
+      return { ...baseStyle, backgroundColor: 'rgba(204,247,89,1)', color: 'black' };
+    } else if (orderStatus === 'error') {
+      return { 
+        ...baseStyle, 
+        backgroundColor: 'rgba(204,247,89,1)', // Keep the base color
+        color: 'white', // Text will be white for better contrast with the error overlay
+      };
+    } else { // idle or loading
+      return { 
+        ...baseStyle, 
+        backgroundColor: 'rgba(204,247,89,1)', 
+        color: 'black',
+        opacity: orderStatus === 'loading' ? 0.6 : 1 
+      };
+    }
+  };
+
+  // Button content based on status
+  const buttonContent = () => {
+    if (orderStatus === 'loading') {
+      return 'Placing…';
+    } else if (orderStatus === 'success') {
+      return (
+        <>
+          <span style={{ position: 'relative', zIndex: 2 }}>Order Placed</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative', zIndex: 2 }}>
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor" />
+          </svg>
+        </>
+      );
+    } else if (orderStatus === 'error') {
+      return (
+        <>
+          <span style={{ position: 'relative', zIndex: 2 }}>Failed</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'relative', zIndex: 2 }}>
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor" />
+          </svg>
+          {/* Error overlay with animation */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(255,99,71,0.8)',
+            animation: 'fillFromCenter 0.3s ease-out forwards',
+            transformOrigin: 'center center',
+            zIndex: 1,
+            borderRadius: '30px'
+          }} />
+        </>
+      );
+    } else {
+      return activeTab === 'buy' ? 'Buy' : 'Sell';
     }
   };
 
@@ -117,8 +241,30 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
       padding: '23px 25px',
       maxWidth: '350px',
       color: 'white',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      position: 'relative'
     }}>
+      {/* Toast Notification */}
+      {showToast && (
+        <div style={{
+          position: 'absolute',
+          top: '-60px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#333',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '4px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000,
+          maxWidth: '300px',
+          textAlign: 'center',
+          animation: 'fadeInOut 3s ease-in-out'
+        }}>
+          {toastMessage}
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{
         display: 'flex',
@@ -232,33 +378,13 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
         </div>
       </div>
 
-      {/* Errors / Success */}
-      {error && (
-        <div style={{ color:'tomato', marginBottom:'10px' }}>{error}</div>
-      )}
-      {successMsg && (
-        <div style={{ color:'lightgreen', marginBottom:'10px' }}>{successMsg}</div>
-      )}
-
       {/* Review / Submit */}
       <button
-        disabled={loading}
-        style={{
-          width:'100%',
-          padding:'15px',
-          backgroundColor:'rgba(204,247,89,1)',
-          border:'none',
-          borderRadius:'30px',
-          color:'black',
-          fontWeight:'bold',
-          fontSize:'16px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          marginBottom:'20px',
-          opacity: loading ? 0.6 : 1
-        }}
+        disabled={orderStatus === 'loading'}
+        style={getButtonStyle()}
         onClick={handleReviewOrder}
       >
-        {loading ? 'Placing…' : (activeTab==='buy' ? 'Buy' : 'Sell')}
+        {buttonContent()}
       </button>
 
       {/* Footer */}
@@ -271,6 +397,23 @@ const TradeCard: React.FC<TradeCardProps> = ({ symbol = 'SPY' }) => {
           Alpaca
         </span>
       </div>
+
+      {/* CSS for animations */}
+      <style>
+        {`
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -10px); }
+            10% { opacity: 1; transform: translate(-50%, 0); }
+            90% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -10px); }
+          }
+          
+          @keyframes fillFromCenter {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+        `}
+      </style>
     </div>
   );
 };
