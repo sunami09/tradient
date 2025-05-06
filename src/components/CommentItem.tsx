@@ -14,11 +14,14 @@ interface Comment {
   createdAt: any;
   upvotes: number;
   downvotes: number;
+  parentId?: string;
 }
 
 interface CommentItemProps {
   comment: Comment;
   postId: string;
+  replies?: Comment[];
+  depth?: number;
 }
 
 // Define styles
@@ -79,10 +82,11 @@ const styles: Record<string, CSSProperties> = {
     cursor: 'pointer',
     fontSize: '12px',
     marginLeft: 'auto',
+    backgroundColor: '#474747',
   },
   replyButtonHover: {
     backgroundColor: '#2A2A2A',
-    color: '#DDD',
+   
   },
   replyForm: {
     marginTop: '15px',
@@ -90,7 +94,7 @@ const styles: Record<string, CSSProperties> = {
     borderTop: '1px solid #333',
   },
   replyInput: {
-    width: '100%',
+    width: '96%',
     padding: '10px 12px',
     backgroundColor: '#2A2A2A',
     border: '1px solid #444',
@@ -127,15 +131,14 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-// Helper function to format date
 const formatDate = (timestamp: any): string => {
   if (!timestamp) return 'Just now';
-  
+
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) {
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     if (diffHours === 0) {
@@ -148,74 +151,66 @@ const formatDate = (timestamp: any): string => {
   } else if (diffDays < 7) {
     return `${diffDays} days ago`;
   } else {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined,
     });
   }
 };
 
-const CommentItem: React.FC<CommentItemProps> = ({ comment, postId }) => {
+const CommentItem: React.FC<CommentItemProps> = ({
+  comment,
+  postId,
+  replies = [],
+  depth = 0,
+}) => {
   const [hoverState, setHoverState] = useState<Record<string, boolean>>({});
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
   const [currentComment, setCurrentComment] = useState(comment);
-  
-  // Toggle hover state for buttons
-  const toggleHover = (element: string, isHovered: boolean) => {
-    setHoverState(prev => ({
-      ...prev,
-      [element]: isHovered
-    }));
-  };
-  
-  // Handle vote changes
+
+  const toggleHover = (element: string, isHovered: boolean) =>
+    setHoverState(prev => ({ ...prev, [element]: isHovered }));
+
   const handleVoteChange = (newUpvotes: number, newDownvotes: number) => {
     setCurrentComment({
       ...currentComment,
       upvotes: newUpvotes,
-      downvotes: newDownvotes
+      downvotes: newDownvotes,
     });
   };
-  
-  // Toggle reply form
+
   const toggleReplyForm = () => {
     if (!auth.currentUser) return;
     setShowReplyForm(!showReplyForm);
     setReplyContent('');
   };
-  
-  // Handle reply submission
+
   const handleReplySubmit = async () => {
     if (!auth.currentUser || !replyContent.trim()) return;
-    
+
     setSubmittingReply(true);
-    
     try {
-      // Get user data
       const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
       const userData = userDoc.data();
-      
-      // Create the reply (which is just another comment with a parentId)
+
       await addDoc(collection(db, 'posts', postId, 'comments'), {
         content: replyContent,
         authorId: auth.currentUser.uid,
         authorUsername: userData?.displayUsername || 'Anonymous',
         authorProfilePic: userData?.profilePic || '',
-        parentId: currentComment.id, // Reference to parent comment
+        parentId: currentComment.id,
         createdAt: serverTimestamp(),
         upvotes: 0,
-        downvotes: 0
+        downvotes: 0,
       });
-      
-      // Update comment count on the post
+
       await updateDoc(doc(db, 'posts', postId), {
-        commentCount: increment(1)
+        commentCount: increment(1),
       });
-      
-      // Close the reply form
+
       setShowReplyForm(false);
       setReplyContent('');
     } catch (err) {
@@ -224,29 +219,31 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, postId }) => {
       setSubmittingReply(false);
     }
   };
-  
+
   return (
     <div style={styles.commentCard}>
       <div style={styles.commentHeader}>
-        {currentComment.authorProfilePic ? (
-          <img 
-            src={currentComment.authorProfilePic} 
-            alt={`${currentComment.authorUsername}'s profile`} 
+        {currentComment.authorProfilePic && depth === 0 && (
+          <img
+            src={currentComment.authorProfilePic}
+            alt={`${currentComment.authorUsername}'s profile`}
             style={styles.profilePic}
           />
-        ) : (
-          <div style={styles.profilePic} />
         )}
         <div style={styles.authorInfo}>
-          <span style={styles.authorName}>{currentComment.authorUsername}</span>
-          <span style={styles.commentDate}>{formatDate(currentComment.createdAt)}</span>
+          <span style={styles.authorName}>
+            {currentComment.authorUsername}
+          </span>
+          {depth == 0 && (<span style={styles.commentDate}>
+            {formatDate(currentComment.createdAt)}
+          </span>)}
         </div>
       </div>
-      
+
       <div style={styles.commentContent}>{currentComment.content}</div>
-      
+
       <div style={styles.commentFooter}>
-        <VotingSystem 
+        <VotingSystem
           postId={postId}
           commentId={currentComment.id}
           currentUpvotes={currentComment.upvotes}
@@ -254,37 +251,39 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, postId }) => {
           onVoteChange={handleVoteChange}
           isComment={true}
         />
-        
-        <button 
-          style={{
-            ...styles.replyButton,
-            ...(hoverState.reply ? styles.replyButtonHover : {})
-          }}
-          onClick={toggleReplyForm}
-          onMouseEnter={() => toggleHover('reply', true)}
-          onMouseLeave={() => toggleHover('reply', false)}
-        >
-          Reply
-        </button>
+
+        {depth === 0 && (
+          <button
+            style={{
+              ...styles.replyButton,
+              ...(hoverState.reply ? styles.replyButtonHover : {}),
+            }}
+            onClick={toggleReplyForm}
+            onMouseEnter={() => toggleHover('reply', true)}
+            onMouseLeave={() => toggleHover('reply', false)}
+          >
+            Reply
+          </button>
+        )}
       </div>
-      
+
       {showReplyForm && (
         <div style={styles.replyForm}>
           <textarea
             value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value)}
+            onChange={e => setReplyContent(e.target.value)}
             placeholder="Write a reply..."
             style={styles.replyInput}
           />
           <div style={styles.replyControls}>
-            <button 
+            <button
               style={styles.replyCancel}
               onClick={toggleReplyForm}
               disabled={submittingReply}
             >
               Cancel
             </button>
-            <button 
+            <button
               style={styles.replySubmit}
               onClick={handleReplySubmit}
               disabled={submittingReply || !replyContent.trim()}
@@ -292,6 +291,20 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, postId }) => {
               {submittingReply ? 'Posting...' : 'Post Reply'}
             </button>
           </div>
+        </div>
+      )}
+
+      {replies.length > 0 && (
+        <div style={{ marginLeft: depth * 20 + 20 }}>
+          {replies.map(reply => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              postId={postId}
+              replies={[]}
+              depth={depth + 1}
+            />
+          ))}
         </div>
       )}
     </div>

@@ -1,13 +1,35 @@
 // pages/PostDetail.tsx
 import React, { useState, useEffect, CSSProperties } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, serverTimestamp, updateDoc, increment } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+  updateDoc,
+  increment,
+} from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import CommentItem from '../components/CommentItem';
 import CreateCommentForm from '../components/CreateCommentForm';
 import VotingSystem from '../components/VotingSystem';
 
-// Define types
+interface Comment {
+  id: string;
+  content: string;
+  authorId: string;
+  authorUsername: string;
+  authorProfilePic: string;
+  createdAt: any;
+  upvotes: number;
+  downvotes: number;
+  parentId?: string;
+}
+
 interface Post {
   id: string;
   title: string;
@@ -22,19 +44,11 @@ interface Post {
   commentCount: number;
 }
 
-interface Comment {
-  id: string;
-  content: string;
-  authorId: string;
-  authorUsername: string;
-  authorProfilePic: string;
-  createdAt: any;
-  upvotes: number;
-  downvotes: number;
-  parentId?: string;
+interface CommentState {
+  roots: Comment[];
+  replies: Comment[];
 }
 
-// Define styles
 const styles: Record<string, CSSProperties> = {
   container: {
     maxWidth: '900px',
@@ -53,9 +67,6 @@ const styles: Record<string, CSSProperties> = {
   },
   backButtonHover: {
     color: '#FFF',
-  },
-  backIcon: {
-    marginRight: '8px',
   },
   postCard: {
     backgroundColor: '#1A1A1A',
@@ -158,33 +169,12 @@ const styles: Record<string, CSSProperties> = {
   },
 };
 
-// Add the keyframes animation
-const addKeyframesToDocument = () => {
-  if (typeof document !== 'undefined') {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }
-};
-
-// Helper function to format date
 const formatDate = (timestamp: any): string => {
   if (!timestamp) return 'Just now';
-  
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
   if (diffDays === 0) {
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     if (diffHours === 0) {
@@ -197,10 +187,10 @@ const formatDate = (timestamp: any): string => {
   } else if (diffDays < 7) {
     return `${diffDays} days ago`;
   } else {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: now.getFullYear() !== date.getFullYear() ? 'numeric' : undefined,
     });
   }
 };
@@ -208,143 +198,105 @@ const formatDate = (timestamp: any): string => {
 const PostDetail: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
-  
+
   const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentState>({ roots: [], replies: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoverState, setHoverState] = useState<Record<string, boolean>>({});
-  
-  // Add animation keyframes
+
+  // inject spinner keyframes
   useEffect(() => {
-    const cleanup = addKeyframesToDocument();
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
     return () => {
-      if (cleanup) cleanup();
+      document.head.removeChild(style);
     };
   }, []);
-  
-  // Toggle hover state for elements
-  const toggleHover = (element: string, isHovered: boolean) => {
-    setHoverState(prev => ({
-      ...prev,
-      [element]: isHovered
-    }));
-  };
-  
-  // Fetch post and comments
+
+  // load post data once
   useEffect(() => {
     if (!postId) {
       setError('Post ID is missing');
       setLoading(false);
       return;
     }
-    
-    const fetchPostAndComments = async () => {
-      setLoading(true);
+    (async () => {
       try {
-        // Fetch post data
-        const postDoc = await getDoc(doc(db, 'posts', postId));
-        
-        if (!postDoc.exists()) {
+        const snap = await getDoc(doc(db, 'posts', postId));
+        if (!snap.exists()) {
           setError('Post not found');
-          setLoading(false);
-          return;
+        } else {
+          setPost({ id: snap.id, ...snap.data() } as Post);
         }
-        
-        const postData = {
-          id: postDoc.id,
-          ...postDoc.data()
-        } as Post;
-        
-        setPost(postData);
-        
-        // Fetch comments
-        const commentsQuery = query(
-          collection(db, 'posts', postId, 'comments'),
-          orderBy('createdAt', 'desc')
-        );
-        
-        const commentsSnapshot = await getDocs(commentsQuery);
-        const fetchedComments: Comment[] = [];
-        
-        commentsSnapshot.forEach((doc) => {
-          fetchedComments.push({
-            id: doc.id,
-            ...doc.data()
-          } as Comment);
-        });
-        
-        setComments(fetchedComments);
       } catch (err) {
-        console.error('Error fetching post:', err);
-        setError('Failed to load post data');
+        console.error('Error loading post:', err);
+        setError('Failed to load post');
       } finally {
         setLoading(false);
       }
-    };
-    
-    fetchPostAndComments();
+    })();
   }, [postId]);
-  
-  // Handle vote change
-  const handleVoteChange = (newUpvotes: number, newDownvotes: number) => {
-    if (post) {
-      setPost({
-        ...post,
-        upvotes: newUpvotes,
-        downvotes: newDownvotes
-      });
-    }
+
+  // real-time comments listener
+  useEffect(() => {
+    if (!postId) return;
+    setLoading(true);
+    const commentsRef = collection(db, 'posts', postId, 'comments');
+    const q = query(commentsRef, orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      q,
+      snapshot => {
+        const all: Comment[] = [];
+        snapshot.forEach(d => all.push({ id: d.id, ...d.data() } as Comment));
+        setComments({
+          roots: all.filter(c => !c.parentId),
+          replies: all.filter(c => !!c.parentId),
+        });
+        setLoading(false);
+      },
+      err => {
+        console.error('Comments listener error:', err);
+        setError('Failed to load comments');
+        setLoading(false);
+      }
+    );
+    return unsubscribe;
+  }, [postId]);
+
+  const handleVoteChange = (newUp: number, newDown: number) => {
+    if (post) setPost({ ...post, upvotes: newUp, downvotes: newDown });
   };
-  
-  // Add a new comment
+
   const handleAddComment = async (content: string) => {
     if (!auth.currentUser || !post) return false;
-    
     try {
       const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
       const userData = userDoc.data();
-      
-      // Add comment to Firestore
-      const commentRef = await addDoc(collection(db, 'posts', post.id, 'comments'), {
+      await addDoc(collection(db, 'posts', post.id, 'comments'), {
         content,
         authorId: auth.currentUser.uid,
         authorUsername: userData?.displayUsername || 'Anonymous',
         authorProfilePic: userData?.profilePic || '',
         createdAt: serverTimestamp(),
         upvotes: 0,
-        downvotes: 0
+        downvotes: 0,
       });
-      
-      // Get the new comment with ID
-      const newCommentDoc = await getDoc(commentRef);
-      const newComment = {
-        id: newCommentDoc.id,
-        ...newCommentDoc.data()
-      } as Comment;
-      
-      // Update comment count on post
-      await updateDoc(doc(db, 'posts', post.id), {
-        commentCount: increment(1)
-      });
-      
-      // Update the post
-      const updatedPostDoc = await getDoc(doc(db, 'posts', post.id));
-      setPost({
-        id: updatedPostDoc.id,
-        ...updatedPostDoc.data()
-      } as Post);
-      
-      // Add to local state
-      setComments([newComment, ...comments]);
-      
+      await updateDoc(doc(db, 'posts', post.id), { commentCount: increment(1) });
+      // onSnapshot will pick up new comment automatically
       return true;
     } catch (err) {
       console.error('Error adding comment:', err);
       return false;
     }
   };
-  
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -354,50 +306,46 @@ const PostDetail: React.FC = () => {
       </div>
     );
   }
-  
+
   if (error || !post) {
     return (
       <div style={styles.container}>
-        <div style={styles.errorContainer}>
-          {error || 'Post not found'}
-        </div>
-        <div 
+        <div style={styles.errorContainer}>{error || 'Post not found'}</div>
+        <div
           style={{
             ...styles.backButton,
-            ...(hoverState.backButton ? styles.backButtonHover : {})
+            ...(hoverState.backButton ? styles.backButtonHover : {}),
           }}
           onClick={() => navigate('/community')}
-          onMouseEnter={() => toggleHover('backButton', true)}
-          onMouseLeave={() => toggleHover('backButton', false)}
+          onMouseEnter={() => setHoverState(s => ({ ...s, backButton: true }))}
+          onMouseLeave={() => setHoverState(s => ({ ...s, backButton: false }))}
         >
-          <span style={styles.backIcon}>←</span> Back to Community
+          ← Back to Community
         </div>
       </div>
     );
   }
-  
+
   return (
     <div style={styles.container}>
-      {/* Back button */}
-      <div 
+      <div
         style={{
           ...styles.backButton,
-          ...(hoverState.backButton ? styles.backButtonHover : {})
+          ...(hoverState.backButton ? styles.backButtonHover : {}),
         }}
         onClick={() => navigate('/community')}
-        onMouseEnter={() => toggleHover('backButton', true)}
-        onMouseLeave={() => toggleHover('backButton', false)}
+        onMouseEnter={() => setHoverState(s => ({ ...s, backButton: true }))}
+        onMouseLeave={() => setHoverState(s => ({ ...s, backButton: false }))}
       >
-        <span style={styles.backIcon}>←</span> Back to Community
+        ← Back to Community
       </div>
-      
-      {/* Post */}
+
       <div style={styles.postCard}>
         <div style={styles.postHeader}>
           {post.authorProfilePic ? (
-            <img 
-              src={post.authorProfilePic} 
-              alt={`${post.authorUsername}'s profile`} 
+            <img
+              src={post.authorProfilePic}
+              alt={`${post.authorUsername}'s profile`}
               style={styles.profilePic}
             />
           ) : (
@@ -408,12 +356,12 @@ const PostDetail: React.FC = () => {
             <span style={styles.postDate}>{formatDate(post.createdAt)}</span>
           </div>
         </div>
-        
+
         <h1 style={styles.postTitle}>{post.title}</h1>
         <div style={styles.postContent}>{post.content}</div>
-        
+
         <div style={styles.postFooter}>
-          <VotingSystem 
+          <VotingSystem
             postId={post.id}
             currentUpvotes={post.upvotes}
             currentDownvotes={post.downvotes}
@@ -421,24 +369,27 @@ const PostDetail: React.FC = () => {
           />
         </div>
       </div>
-      
-      {/* Comment form */}
+
       <CreateCommentForm onSubmit={handleAddComment} />
-      
-      {/* Comments */}
+
       <div style={styles.commentHeader}>
         Comments <span style={styles.commentCount}>({post.commentCount})</span>
       </div>
-      
+
       <div style={styles.commentList}>
-        {comments.length > 0 ? (
-          comments.map(comment => (
-            <CommentItem 
-              key={comment.id} 
-              comment={comment} 
-              postId={post.id}
-            />
-          ))
+        {comments.roots.length > 0 ? (
+          comments.roots.map(root => {
+            const directReplies = comments.replies.filter(r => r.parentId === root.id);
+            return (
+              <CommentItem
+                key={root.id}
+                comment={root}
+                postId={post.id}
+                replies={directReplies}
+                depth={0}
+              />
+            );
+          })
         ) : (
           <div style={styles.noComments}>
             No comments yet. Be the first to join the discussion!

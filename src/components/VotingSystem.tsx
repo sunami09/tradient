@@ -37,6 +37,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: '4px',
     transition: 'all 0.2s ease',
+    backgroundColor: '#262525',
   },
   voteButtonHover: {
     backgroundColor: '#2A2A2A',
