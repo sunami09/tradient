@@ -5,6 +5,7 @@ import {
   ProfilePictureStep,
   NameInputStep,
   LastNameInputStep,
+  DateOfBirthStep
 } from "../components/ProfileSteps";
 import { auth, db, storage } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -16,6 +17,12 @@ function UpdateProfilePage() {
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  
+  // Validation states
+  const [isFirstNameValid, setIsFirstNameValid] = useState(false);
+  const [isLastNameValid, setIsLastNameValid] = useState(false);
+  const [isDateOfBirthValid, setIsDateOfBirthValid] = useState(false);
 
   // Handle file selection
   const handleFileChange = (file: File | null) => {
@@ -25,11 +32,19 @@ function UpdateProfilePage() {
   // Handle first name input
   const handleNameChange = (name: string) => {
     setFirstName(name);
+    setIsFirstNameValid(name.trim().length > 0);
   };
 
   // Handle last name input
   const handleLastNameChange = (name: string) => {
     setLastName(name);
+    setIsLastNameValid(name.trim().length > 0);
+  };
+  
+  // Handle date of birth input
+  const handleDateOfBirthChange = (date: Date | null) => {
+    setDateOfBirth(date);
+    setIsDateOfBirthValid(!!date);
   };
 
   // Upload profile picture to Firebase Storage
@@ -64,6 +79,7 @@ function UpdateProfilePage() {
         {
           firstName,
           lastName,
+          dateOfBirth: dateOfBirth ? dateOfBirth.toISOString() : null,
           profilePic: profilePicUrl,
         },
         { merge: true }
@@ -88,6 +104,7 @@ function UpdateProfilePage() {
         const url = await uploadProfilePicture();
         setProfilePicUrl(url);
       },
+      isNextDisabled: false,
     },
     {
       message: "So, what should we call you?",
@@ -99,18 +116,33 @@ function UpdateProfilePage() {
         />
       ),
       onNext: async () => {},
+      isNextDisabled: !isFirstNameValid,
     },
     {
       message: "What is your last name?",
       rightPaneContent: (
         <LastNameInputStep
           profilePicUrl={profilePicUrl}
+          lastName={lastName}
           onLastNameChange={handleLastNameChange}
+        />
+      ),
+      onNext: async () => {},
+      isNextDisabled: !isLastNameValid,
+    },
+    {
+      message: "When were you born?",
+      rightPaneContent: (
+        <DateOfBirthStep
+          profilePicUrl={profilePicUrl}
+          dateOfBirth={dateOfBirth}
+          onDateOfBirthChange={handleDateOfBirthChange}
         />
       ),
       onNext: async () => {
         await saveProfileData();
       },
+      isNextDisabled: !isDateOfBirthValid,
     },
   ];
 
