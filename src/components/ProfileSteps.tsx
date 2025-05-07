@@ -15,7 +15,14 @@ export interface NameInputStepProps {
 
 export interface LastNameInputStepProps {
   profilePicUrl: string | null;
+  lastName: string;
   onLastNameChange: (lastName: string) => void;
+}
+
+export interface DateOfBirthStepProps {
+  profilePicUrl: string | null;
+  dateOfBirth: Date | null;
+  onDateOfBirthChange: (date: Date | null) => void;
 }
 
 // Profile picture step
@@ -97,6 +104,18 @@ export function NameInputStep({
   onNameChange,
 }: NameInputStepProps) {
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    onNameChange(value);
+    
+    if (value.trim() === "") {
+      setError("First name is required");
+    } else {
+      setError(null);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
@@ -108,11 +127,17 @@ export function NameInputStep({
       <input
         autoFocus
         type="text"
-        placeholder="First name"
+        placeholder="First name*"
         value={firstName}
-        onChange={(e) => onNameChange(e.target.value)}
+        onChange={handleChange}
         className="minimal-input"
       />
+      
+      {error && (
+        <div style={{ color: "#ff4757", fontSize: "0.9rem", marginTop: "5px", animation: "fadeIn 0.3s ease-in forwards" }}>
+          {error}
+        </div>
+      )}
       
       <style>{`
         .minimal-input {
@@ -139,8 +164,22 @@ export function NameInputStep({
 // Last name step
 export function LastNameInputStep({
   profilePicUrl,
+  lastName,
   onLastNameChange,
 }: LastNameInputStepProps) {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    onLastNameChange(value);
+    
+    if (value.trim() === "") {
+      setError("Last name is required");
+    } else {
+      setError(null);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
       {profilePicUrl && (
@@ -151,10 +190,18 @@ export function LastNameInputStep({
       <input
         autoFocus
         type="text"
-        placeholder="Last name"
-        onChange={(e) => onLastNameChange(e.target.value)}
+        placeholder="Last name*"
+        value={lastName}
+        onChange={handleChange}
         className="minimal-input"
       />
+      
+      {error && (
+        <div style={{ color: "#ff4757", fontSize: "0.9rem", marginTop: "5px", animation: "fadeIn 0.3s ease-in forwards" }}>
+          {error}
+        </div>
+      )}
+      
       <style>{`
         .minimal-input {
           background: transparent;
@@ -171,6 +218,77 @@ export function LastNameInputStep({
           color: #555;
           font-size: 2rem;
           text-align: center;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Date of Birth step
+export function DateOfBirthStep({
+  profilePicUrl,
+  dateOfBirth,
+  onDateOfBirthChange,
+}: DateOfBirthStepProps) {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    if (value) {
+      const date = new Date(value);
+      onDateOfBirthChange(date);
+      setError(null);
+    } else {
+      onDateOfBirthChange(null);
+      setError("Date of birth is required");
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", opacity: 0, animation: "fadeIn 0.5s ease-in forwards" }}>
+      {profilePicUrl && (
+        <div style={{ width: "150px", height: "150px", borderRadius: "50%", overflow: "hidden", margin: "0 auto 30px", border: "2px solid #333", boxShadow: "0 0 15px rgba(0, 255, 153, 0.3)" }}>
+          <img src={profilePicUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+      )}
+      
+      <div style={{ width: "80%", textAlign: "center", marginBottom: "30px" }}>
+        <div style={{ color: "#555", fontSize: "2rem", marginBottom: "20px" }}>
+          Date of Birth*
+        </div>
+        <input
+          autoFocus
+          type="date"
+          value={dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : ''}
+          onChange={handleChange}
+          className="date-input"
+          max={new Date().toISOString().split('T')[0]} // Set max date to today
+        />
+      </div>
+      
+      {error && (
+        <div style={{ color: "#ff4757", fontSize: "0.9rem", marginTop: "5px", animation: "fadeIn 0.3s ease-in forwards" }}>
+          {error}
+        </div>
+      )}
+      
+      <style>{`
+        .date-input {
+          background: #333;
+          border: 1px solid #555;
+          outline: none;
+          color: white;
+          width: 100%;
+          padding: 12px;
+          border-radius: 6px;
+          font-size: 1.2rem;
+          text-align: center;
+          transition: all 0.3s ease;
+        }
+        .date-input:focus {
+          border-color: #00ff99;
+          box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
         }
       `}</style>
     </div>

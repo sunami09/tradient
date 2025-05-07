@@ -5,6 +5,7 @@ export type OnboardingStep = {
   message: string;
   rightPaneContent: ReactNode;
   onNext?: (data?: any) => Promise<void> | void;
+  isNextDisabled?: boolean; // New property to control Next button state
 };
 
 export interface OnboardingFlowProps {
@@ -67,9 +68,18 @@ export function OnboardingFlow({
     }
   }, [animationPhase, currentStep, steps]);
 
+  // Check if next button should be disabled for the current step
+  const isNextButtonDisabled = () => {
+    if (isLoading) return true;
+    if (currentStep < steps.length && steps[currentStep].isNextDisabled !== undefined) {
+      return steps[currentStep].isNextDisabled;
+    }
+    return false;
+  };
+
   // Updated handleNext that always calls onNext if provided
   const handleNext = async () => {
-    if (isLoading) return;
+    if (isLoading || isNextButtonDisabled()) return;
 
     setIsLoading(true);
     try {
@@ -227,13 +237,13 @@ export function OnboardingFlow({
                 position: "absolute",
                 bottom: "6rem",
                 right: "4rem",
-                background: "#00ff99",
-                color: "black",
+                background: isNextButtonDisabled() ? "#555" : "#00ff99",
+                color: isNextButtonDisabled() ? "#999" : "black",
                 fontWeight: "bold",
                 border: "none",
                 padding: "0.7rem 1.5rem",
                 borderRadius: "999px",
-                cursor: isLoading ? "wait" : "pointer",
+                cursor: isNextButtonDisabled() ? "not-allowed" : isLoading ? "wait" : "pointer",
                 opacity: 0,
                 animation: "fadeIn 0.5s ease-in 0.3s forwards",
                 display: "flex",
@@ -243,9 +253,10 @@ export function OnboardingFlow({
                 minHeight: "5vh",
                 fontSize: "20px",
                 transition: "all 0.3s ease",
+                boxShadow: isNextButtonDisabled() ? "none" : "0 4px 6px rgba(0, 0, 0, 0.2)",
               }}
               onClick={handleNext}
-              disabled={isLoading}
+              disabled={isNextButtonDisabled()}
             >
               {isLoading ? <div className="spinner"></div> : "Next"}
             </button>
@@ -333,7 +344,7 @@ export function OnboardingFlow({
             animation: rotate 0.8s linear infinite;
           }
           
-          .next-button.animated {
+          .next-button.animated:not(:disabled) {
             animation: fadeIn 0.5s ease-in forwards, flutter 5s ease-in-out infinite;
             box-shadow: 0 0 15px rgba(0, 255, 153, 0.5);
           }

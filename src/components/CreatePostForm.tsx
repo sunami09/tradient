@@ -11,7 +11,7 @@ const styles: Record<string, CSSProperties> = {
     padding: '25px 30px',
     marginBottom: '20px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    width: '48vw',
+    width: '47.5vw',
   },
   cardTitle: {
     fontSize: '20px',
