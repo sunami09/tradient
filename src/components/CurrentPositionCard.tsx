@@ -91,22 +91,7 @@ const CurrentPositionCard: React.FC<CurrentPositionCardProps> = ({ symbol }) => 
     return null;
   }
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          background: "rgba(255,255,255,0.05)",
-          borderRadius: "8px",
-          padding: "1rem",
-          marginTop: "1rem",
-          marginBottom: "1rem",
-          color: "white"
-        }}
-      >
-        Loading position data...
-      </div>
-    );
-  }
+
 
   if (error) {
     return null; // Don't show errors, just don't display anything
