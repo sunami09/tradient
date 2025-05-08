@@ -2,7 +2,7 @@
 
 **Tradient** is a full-stack, stock trading simulator that lets users trade with real-time prices, analyze portfolio performance, view financial news with sentiment scoring, and engage in a trading-focused community — all powered by modern frontend/backend tooling and ML-driven insights.
 
-🌐 **Live**: [https://tradientv2.vercel.app](https://tradientv2.vercel.app)
+🌐 **Live**: [https://tradient.dev/](https://tradient.dev/)
 
 ---
 
