@@ -207,6 +207,8 @@ function TradingProfile() {
       >
         To get your API Key & Secret, sign up at Alpaca and in your dashboard go
         to "API Keys" to generate them.
+        Api: PKBGF7MYZYTG44EBH0I4
+        Sec: PzxmPQ1ZJmF1bW9EB7sQfQdpOdxhtPO4tAGN85Mo
       </p>
 
       {/* Toggle switch */}
